@@ -93,7 +93,7 @@ class Tool:
     def run(self, start, end):
         print('开始运行...')
         for goods_name, goods_id in self.get_list(start, end):
-            save_path = Path(sys.argv[0]).parent.joinpath('结果', goods_name)
+            save_path = Path(sys.argv[0]).parent.joinpath('结果', str(goods_id))
             save_path.mkdir(exist_ok=True, parents=True)
             img_path = save_path.joinpath('图片')
             img_path.mkdir(exist_ok=True, parents=True)
@@ -138,14 +138,21 @@ class Tool:
                                    key=lambda x: x['sort']):
                     attr.append(item['attr_name'])
 
-                writer.writerow(['SIZE', 'US'] + attr)
                 us = {}
                 for item in goods['localSizeList']['size_rule_list']:
                     us[item['name']] = item['correspond']
+                if us:
+                    writer.writerow(['SIZE', 'US'] + attr)
+                else:
+                    writer.writerow(['SIZE'] + attr)
+
                 for item in goods['sizeInfoDes']['sizeInfo']:
                     attr_value_name = item['attr_value_name']
+                    if us:
+                        l = [attr_value_name, us[attr_value_name]]
+                    else:
+                        l = [attr_value_name]
 
-                    l = [attr_value_name, us[attr_value_name]]
                     for attr_value in attr:
                         l.append(item[attr_value])
                     writer.writerow(l)
@@ -161,7 +168,6 @@ class Tool:
 
 if __name__ == '__main__':
     try:
-
 
         os.system('chcp 65001')
         start, end = input('输入页数区间 例(1-5):').split('-')

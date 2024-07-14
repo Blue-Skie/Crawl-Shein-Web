@@ -44,7 +44,8 @@ class Tool:
                 title = data['productIntroData']['detail']['goods_name']
                 price = data['productIntroData']['getPrice']['salePrice']['amountWithSymbol']
 
-                save_path = Path(sys.argv[0]).parent.joinpath('结果', title.replace(" ", "-"))
+                save_path = Path(sys.argv[0]).parent.joinpath('结果',
+                                                              str(data['productIntroData']['detail']['goods_id']))
                 save_path.mkdir(exist_ok=True, parents=True)
                 img_path = save_path.joinpath('图片')
                 img_path.mkdir(exist_ok=True, parents=True)
@@ -85,18 +86,25 @@ class Tool:
                                        key=lambda x: x['sort']):
                         attr.append(item['attr_name'])
 
-                    writer.writerow(['SIZE', 'US'] + attr)
                     us = {}
+
                     for item in data['productIntroData']['localSizeList']['size_rule_list']:
                         us[item['name']] = item['correspond']
+
+                    if us:
+                        writer.writerow(['SIZE', 'US'] + attr)
+                    else:
+                        writer.writerow(['SIZE'] + attr)
+
                     for item in data['productIntroData']['sizeInfoDes']['sizeInfo']:
                         attr_value_name = item['attr_value_name']
-
-                        l = [attr_value_name, us[attr_value_name]]
+                        if us:
+                            l = [attr_value_name, us[attr_value_name]]
+                        else:
+                            l = [attr_value_name]
                         for attr_value in attr:
                             l.append(item[attr_value])
                         writer.writerow(l)
-
 
                     print('写入表格完毕!')
                     print('开始下载图片...')
